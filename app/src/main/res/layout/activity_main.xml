@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    tools:openDrawer="start"
+    android:id="@+id/drawer"
+    >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <fragment
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/top_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/_10sdp"
+            android:layout_marginTop="@dimen/_40sdp"
+            app:cardBackgroundColor="@color/grey"
+            app:cardCornerRadius="@dimen/_10sdp"
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_margin="@dimen/_10sdp">
+
+                <ImageView
+                    android:id="@+id/menu"
+                    android:layout_width="@dimen/_30sdp"
+                    android:layout_height="@dimen/_30sdp"
+                    android:background="@drawable/ic_menu_bg"
+                    android:src="@drawable/ic_menu"
+                    android:padding="@dimen/_5sdp"/>
+
+                <EditText
+                    android:id="@+id/your_location"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/_30sdp"
+                    android:background="@drawable/ic_et_bg"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:hint="@string/your_location"
+                    android:paddingHorizontal="@dimen/_7sdp"
+                    android:inputType="text"
+                    android:focusable="true"
+                    android:clickable="true"/>
+
+                <EditText
+                    android:id="@+id/destination"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/_30sdp"
+                    android:background="@drawable/ic_et_bg"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:hint="@string/destination"
+                    android:paddingHorizontal="@dimen/_7sdp"
+                    android:inputType="text"
+                    android:focusable="true"
+                    android:clickable="true"/>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <RelativeLayout
+            android:id="@+id/items_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/top_view"
+            android:layout_above="@id/request_ride"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:background="@color/white">
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:indeterminateTint="@color/darkGrey"/>
+
+        </RelativeLayout>
+
+
+        <Button
+            android:id="@+id/request_ride"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginHorizontal="@dimen/_50sdp"
+            android:layout_marginBottom="@dimen/_20sdp"
+            android:text="@string/request_rd"
+            android:backgroundTint="@color/blue"
+            android:textSize="@dimen/_20ssp"
+            />
+    </RelativeLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        app:menu="@menu/main"
+        app:headerLayout="@layout/layout_nav_header"
+        android:layout_gravity="start"/>
+</androidx.drawerlayout.widget.DrawerLayout>
