@@ -2,6 +2,7 @@ package com.moaapps.mtmsandroidtask
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
@@ -14,6 +15,7 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -31,7 +33,9 @@ import com.moaapps.mtmsandroidtask.listeners.SourceLocationListener
 import com.moaapps.mtmsandroidtask.modules.AppLocation
 import com.moaapps.mtmsandroidtask.modules.Status
 import com.moaapps.mtmsandroidtask.viewmodels.DestinationsViewModel
+import com.moaapps.mtmsandroidtask.viewmodels.DriversViewModel
 import com.moaapps.mtmsandroidtask.viewmodels.SourcesViewModel
+import java.lang.StringBuilder
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback,
@@ -43,13 +47,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
 
     private lateinit var sourcesViewModel: SourcesViewModel
     private lateinit var destinationsViewModel: DestinationsViewModel
+    private lateinit var driversViewModel: DriversViewModel
+
     private lateinit var sourceLocationAdapter: SourceLocationAdapter
     private lateinit var destinationsAdapter: DestinationsAdapter
+
     private lateinit var binding: ActivityMainBinding
     private lateinit var mMap: GoogleMap
     private lateinit var locationManager: LocationManager
-    private lateinit var appLocation: AppLocation
+    private lateinit var sourceLocation: AppLocation
     private lateinit var destinationLocation: AppLocation
+    private lateinit var loadingDialog:Dialog
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,6 +66,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         setContentView(binding.root)
         sourcesViewModel = ViewModelProvider(this).get(SourcesViewModel::class.java)
         destinationsViewModel = ViewModelProvider(this).get(DestinationsViewModel::class.java)
+        driversViewModel = ViewModelProvider(this).get(DriversViewModel::class.java)
+
+        loadingDialog = Dialog(this)
+        loadingDialog.setContentView(ProgressBar(this))
 
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment
@@ -100,6 +112,31 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
                      binding.recyclerView.adapter = destinationsAdapter
                  }
              }
+        })
+
+        driversViewModel.driversList.observe(this, {
+            when (it.status) {
+                Status.LOADING -> loadingDialog.show()
+                Status.ERROR -> {
+                    loadingDialog.dismiss()
+                    Toast.makeText(this, it.msg, Toast.LENGTH_SHORT).show()
+                }
+                Status.SUCCESS -> {
+                    loadingDialog.dismiss()
+                    if (it.data?.isEmpty()!!) {
+                        Toast.makeText(this, "No Drivers Found", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val stringBuilder = StringBuilder()
+                        stringBuilder.append("Drivers: ")
+                        it.data.forEach { driver ->
+                            stringBuilder.append("${driver.name}, ")
+                            Log.d(TAG, "Driver: ${driver.name}, lat: ${driver.latitude}, lng: ${driver.longitude}")
+                        }
+                        stringBuilder.append("are near you")
+                        Toast.makeText(this, stringBuilder.toString(), Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
         })
 
         binding.yourLocation.setOnFocusChangeListener { _, hasFocus ->
@@ -153,6 +190,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
         binding.navView.setNavigationItemSelectedListener(this)
         binding.menu.setOnClickListener {
             binding.drawer.openDrawer(GravityCompat.START)
+        }
+
+        binding.requestRide.setOnClickListener {
+            if (this::sourceLocation.isInitialized){
+                driversViewModel.getNearestDrivers(sourceLocation)
+            }else{
+                Toast.makeText(this, "Select Your Location", Toast.LENGTH_SHORT).show()
+            }
         }
 
     }
@@ -266,7 +311,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onSourceLocationSelected(appLocation: AppLocation) {
-        this.appLocation = appLocation
+        this.sourceLocation = appLocation
         moveOriginal()
         binding.yourLocation.setText(appLocation.name)
     }
